@@ -1,4 +1,3 @@
 # expense-tracking-system
 
-High Level Design (HLD)
-![HLD-Design](assets/expense-tracker-hld.png)
+checkout the requirements for the expense-tracking-system [here](requirements.md)
