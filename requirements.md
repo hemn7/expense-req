@@ -1,93 +1,128 @@
-# expense-tracker-system
+# 📊 expense-tracker-system
 
-## 1. Functional Requirements
-- **User Authentication**: Users should be able to **sign up and log in** securely.
+This document provides an overview of the **functional requirements, system architecture, authentication mechanisms, and database design** for the expense-tracker-system.
+
+---
+
+## 📌 1. Functional Requirements
+- **User Authentication**: Users can **sign up and log in securely**.
 - **Expense Management**:
-  - Users should be able to **add and remove expenses manually**.
-  - Users should be able to **view their expenses**, categorized appropriately.
+  - Users can **add, update, and remove expenses manually**.
+  - Expenses should be **categorized appropriately** (e.g., Food, Travel, Shopping).
 - **Reports & Statistics**:
-  - Users should be able to view **weekly, monthly, and yearly reports**.
-  - The system should provide **visual statistics** of spending habits.
+  - Users can view **weekly, monthly, and yearly reports**.
+  - The system should provide **visual insights** into spending patterns.
 
-## 2. Non-Functional Requirements
-- **Performance**:
-  - The system should have a **latency of less than 100ms** for common operations.
-- **Scalability & Fault Tolerance**:
-  - The system should be scalable and **handle a growing number of users and transactions**.
-  - It should be **fault-tolerant**, ensuring minimal downtime.
-- **Config-Driven System**:
-  - Reduce code changes by **making configurations dynamic** where possible.
+---
 
-## 3. Future Scope & Enhancements
-- **Financial Insights**:
-  - Users should be able to track their **financial behavior**.
-  - The system should provide **personalized financial improvement tips**.
-- **Automated Expense Tracking**:
-  - The app should **parse SMS messages** (with permission) to automatically add expenses.
-- **Notifications & Alerts**:
-  - Send **WhatsApp and SMS notifications** regarding overspending, risk alerts, etc.
+## ⚙️ 2. Non-Functional Requirements
+- **Performance**:  
+  - The system should have a **latency of <100ms** for common operations.
+- **Scalability & Fault Tolerance**:  
+  - Handle a growing number of users and transactions.
+  - Ensure **minimal downtime** with fault-tolerant architecture.
+- **Security**:  
+  - Implement **OAuth2 & JWT authentication**.
+  - Store **passwords securely with Bcrypt**.
+- **Config-Driven System**:  
+  - Reduce code changes by using **dynamic configurations**.
 
-## 4. High-Level Design (HLD)
-![HLD-Design](assets/expense-tracker-hld.png)
+---
 
-### Table of Contents:
-1. **Authentication & Authorization**
-2. **Tokens & Their Types**
-3. **Choice of Tokens**
-4. **Java Servlets & Security**
-5. **Database Choice**
-6. **Data Store Considerations**
-7. **User Flow**
-8. **Spring Security Implementation**
+## 🚀 3. Future Scope & Enhancements
+- **Financial Insights**:  
+  - Provide **personalized financial improvement tips**.
+  - Track **spending behavior trends**.
+- **Automated Expense Tracking**:  
+  - Auto-extract expense data from **SMS messages** (with user permission).
+- **Notifications & Alerts**:  
+  - Send **WhatsApp & SMS alerts** for overspending, risk alerts, and reminders.
 
-### 4.1 Authentication & Authorization
-- **Authentication** verifies user identity (username/password or token validation).
-- **Authorization** determines the resources users can access or modify.
+---
 
-### 4.2 Token Management
-- **JWT (JSON Web Tokens)** for access tokens.
-- **Opaque Tokens** for refresh tokens stored in a database.
-- **Access Token (Short-lived)**: 15-minute expiration.
-- **Refresh Token (Long-lived)**: 1-month expiration, stored securely.
+## 🏗️ 4. High-Level Design (HLD)
+![High-Level Design](assets/expense-tracker-hld.png)
 
-### 4.3 Token Storage Options
-- **Cookies vs. Local Storage**:
-  - Cookies provide better security (HttpOnly, Secure, SameSite policies).
-  - Local storage is vulnerable to XSS attacks.
-- **Strategy**:
-  - Store **access tokens in memory**.
-  - Store **refresh tokens in secure HttpOnly cookies**.
+### 🔹 4.1 Authentication & Authorization
+- **Authentication**: Verifies user identity (username/password or token validation).
+- **Authorization**: Grants or denies access based on user roles.
 
-### 4.4 Database Selection: SQL vs. NoSQL
-#### **SQL (MySQL/PostgreSQL) Benefits**:
-- Strong **consistency (ACID properties)**.
-- Ideal for **complex queries and transactional data**.
-- Ensures **data integrity** and avoids duplication.
+### 🔹 4.2 Token Management
+- **JWT (JSON Web Token)** for **access tokens**.
+- **Opaque Tokens** (stored in DB) for **refresh tokens**.
+- **Expiration Policies**:
+  - **Access Token**: **15-minute** validity.
+  - **Refresh Token**: **1-month** validity (stored securely).
 
-#### **NoSQL (MongoDB/DynamoDB) Benefits**:
-- **High availability** and partition tolerance.
-- Efficient for **read-heavy operations** and unstructured data.
+### 🔹 4.3 Token Storage Options
+| Storage Option | Security Level | Use Case |
+|---------------|--------------|---------|
+| **Cookies (HttpOnly, Secure)** | 🔒 High | **Recommended** for refresh tokens |
+| **Local Storage** | ⚠️ Low | Vulnerable to XSS attacks |
+| **Memory Storage** | ✅ Medium | Used for short-lived access tokens |
 
-#### **Choice:**
-- Use **PostgreSQL** for structured transactional data (expenses, user info).
-- Consider **Redis for fast token lookups** (session management).
+**Strategy**:
+- **Access tokens** → Stored **in memory**.
+- **Refresh tokens** → Stored **in secure HttpOnly cookies**.
 
-### 4.5 User Flow
-#### **Sign-Up Process**:
+### 🔹 4.4 Database Selection: SQL vs. NoSQL
+| Criteria | SQL (PostgreSQL) | NoSQL (MongoDB/DynamoDB) |
+|----------|-----------------|-------------------------|
+| **Consistency** | ✅ ACID Compliance | ❌ Eventual Consistency |
+| **Query Complexity** | ✅ Complex Queries Supported | ❌ Limited Querying |
+| **Data Integrity** | ✅ Strong Schema | ❌ Flexible Schema |
+| **Scalability** | ❌ Vertical Scaling | ✅ Horizontal Scaling |
+
+**Final Choice**:
+- **PostgreSQL** for structured transactional data (expenses, users).
+- **Redis** for caching session data (fast lookups).
+
+---
+
+## 🔍 5. Low-Level Design (LLD)
+### 📌 **LLD Diagram**
+![Low-Level Design](assets/lld.png)
+
+### 🔹 5.1 User Flow
+#### 🔑 **Sign-Up Process**
 1. User submits credentials.
-2. System checks for existing username.
-3. Password is **hashed with Bcrypt** and stored.
-4. Access and refresh tokens are generated.
-5. User service stores user details.
-6. Tokens are sent to the client.
+2. System checks if username exists.
+3. **Password is hashed** (Bcrypt) and stored.
+4. **JWT access & refresh tokens** are generated.
+5. Tokens are returned to the client.
 
-#### **Sign-In Process**:
+#### 🔑 **Sign-In Process**
 1. User submits credentials.
 2. Password is verified.
-3. New JWT access token is issued.
-4. If access token expires, refresh token is used to get a new one.
-5. User is authenticated and allowed access to resources.
+3. A new **JWT access token** is issued.
+4. **Refresh token** is used when access token expires.
+5. User is authenticated and granted access.
 
-## Conclusion
-This document provides a **structured approach** for developing the Expense Tracker App, covering functional, non-functional, and future requirements. It includes authentication strategies, token management, database choices, and user flows. This serves as a solid foundation before moving into Low-Level Design (LLD) and implementation.
+---
 
+## 🗄️ 6. Database Schema
+### 📌 **ER Diagram**
+![ER Diagram](assets/er.png)
+
+### 🔹 6.1 Key Tables
+- **Users** (stores user credentials and roles).
+- **Expenses** (records transactions with timestamps).
+- **Categories** (links expenses to specific spending types).
+- **Tokens** (manages refresh token storage securely).
+
+---
+
+## 🛡️ 7. Security Considerations
+- **Password Hashing**: Use **Bcrypt** to hash passwords.
+- **Role-Based Access Control (RBAC)**:  
+  - Admin → **Manage users, view reports**.  
+  - User → **Manage personal expenses**.
+- **Data Encryption**: Encrypt sensitive data at rest & in transit.
+
+---
+
+## ✅ Conclusion
+This document provides a **structured approach** for developing the **Expense Tracker System**, covering:
+- Functional & non-functional requirements.
+- System architecture, database design, authentication strategies.
+- **High-Level & Low-Level Design (HLD & LLD)** diagrams.
